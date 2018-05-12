@@ -554,7 +554,12 @@ public :
   				)
   		{
 		  //  MAKE THIS THREAD-SAFE, PLEASE
+		  if (dishPtr_ != NULL) {
+		    printf("Clear this dish off the table!!!");
+		    usleep(3);
+		  }
 		  dishPtr_	= newDishPtr;
+                  
 		  sleep( (rand() % MAX_SLEEP_SECONDS) + 1);
 		  std::cout
 			<< chef
@@ -589,7 +594,7 @@ public :
 
 //  PURPOSE:  To serve as the global singleton Table instance.
 Table		table;
-
+pthread_mutex_t tableLock;
 
 //  PURPOSE:  To have the Chef pointed to by 'void*' ptr 'vPtr' execute
 //	its 'prepare()' method 'NUM_DISHES_TO_DO' times and 'serve()' the
@@ -602,7 +607,9 @@ void*		cook	(void*		vPtr
   //  PERHAPS A LOOP HERE
   for (int i = 0; i < NUM_DISHES_TO_DO; i++) {
     Dish* dish = (*chefPtr).prepare();
+    pthread_mutex_lock(&tableLock);
     table.serve(*chefPtr, dish);
+    pthread_mutex_unlock(&tableLock);
   }
   // done
 
@@ -620,8 +627,10 @@ void*		eat	(void*		vPtr
 
   //  PERHAPS A LOOP HERE
   for (int i = 0; i < NUM_DISHES_TO_DO; i++) {
+    pthread_mutex_lock(&tableLock);
     Dish* dish = table.eatFrom(*gourmandPtr);
-  //  table.consume();
+    pthread_mutex_unlock(&tableLock);
+    (*gourmandPtr).consume(dish);
   }
 
   return(NULL /* CHANGE IF YOU WANT */);
@@ -646,6 +655,8 @@ int		main	(int		argc,
   //  II.B.  Create Chef and Gourmand threads:
   pthread_t	chefIds[NUM_CHEFS];
   pthread_t	gourmandIds[NUM_CHEFS];
+  
+  pthread_mutex_init(&tableLock,NULL);
 
   //  PERHAPS A LOOP HERE
   for (int i = 0; i < NUM_CHEFS; i++) {
@@ -653,6 +664,7 @@ int		main	(int		argc,
     pthread_create(&chefIds[i], NULL, cook, chef); 
     int* intPtr;
     pthread_join(chefIds[i], (void**)&intPtr);
+    delete(chef);
   }
   // done
 
@@ -663,8 +675,11 @@ int		main	(int		argc,
     pthread_create(&gourmandIds[i], NULL, eat, gour);
     int* intPtr;
     pthread_join(gourmandIds[i], (void**)&intPtr);
+    delete(gour);
   }
   // done
+
+  pthread_mutex_destroy(&tableLock);  
 
   //  III.  Finished:
   return(EXIT_SUCCESS);
