@@ -600,6 +600,11 @@ void*		cook	(void*		vPtr
   Chef*	chefPtr	= (Chef*)vPtr;
 
   //  PERHAPS A LOOP HERE
+  for (int i = 0; i < NUM_DISHES_TO_DO; i++) {
+    Dish* dish = (*chefPtr).prepare();
+    table.serve(*chefPtr, dish);
+  }
+  // done
 
   return(NULL /* CHANGE IF YOU WANT */);
 }
@@ -614,6 +619,10 @@ void*		eat	(void*		vPtr
   Gourmand*	gourmandPtr	= (Gourmand*)vPtr;
 
   //  PERHAPS A LOOP HERE
+  for (int i = 0; i < NUM_DISHES_TO_DO; i++) {
+    Dish* dish = table.eatFrom(*gourmandPtr);
+  //  table.consume();
+  }
 
   return(NULL /* CHANGE IF YOU WANT */);
 }
@@ -639,9 +648,23 @@ int		main	(int		argc,
   pthread_t	gourmandIds[NUM_CHEFS];
 
   //  PERHAPS A LOOP HERE
+  for (int i = 0; i < NUM_CHEFS; i++) {
+    Chef* chef = new Chef(i);
+    pthread_create(&chefIds[i], NULL, cook, chef); 
+    int* intPtr;
+    pthread_join(chefIds[i], (void**)&intPtr);
+  }
+  // done
 
   //  II.C.  Wait for Chef and Gourmand threads:
   //  PERHAPS A LOOP HERE
+  for (int i = 0; i < NUM_GOURMANDS; i++) {
+    Gourmand* gour = new Gourmand(i);
+    pthread_create(&gourmandIds[i], NULL, eat, gour);
+    int* intPtr;
+    pthread_join(gourmandIds[i], (void**)&intPtr);
+  }
+  // done
 
   //  III.  Finished:
   return(EXIT_SUCCESS);
