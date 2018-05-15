@@ -502,6 +502,10 @@ class		Table
 
   //  PURPOSE:  To implement mutual exclusion.
   //  PERHAPS ADD SOME VARS HERE
+  pthread_mutex_t 	lock_;
+  pthread_cond_t	dishOnTable_;
+  pthread_cond_t	noDishOnTable_;
+  // done
 
   //  II.  Disallowed auto-generated methods:
   //  No copy constructor:
@@ -524,12 +528,20 @@ public :
   		dishPtr_(NULL)
 		{
 		  //  PERHAPS INITIALIZE SOME VARS HERE
+		  pthread_mutex_init(&lock_, NULL);
+		  pthread_cond_init(&dishOnTable_, NULL);
+   		  pthread_cond_init(&noDishOnTable_, NULL);
+ 		  // done
 		}
 
   //  PURPOSE:  To release resources.  No parameters.  No return value.
   ~Table	()
   		{
 		  //  PERHAPS DESTROY SOME VARS HERE
+		  pthread_mutex_destroy(&lock_);
+		  pthread_cond_destroy(&dishOnTable_);
+		  pthread_cond_destroy(&noDishOnTable_);
+		  // done
 		}
 
   //  V.  Accessors:
@@ -554,9 +566,10 @@ public :
   				)
   		{
 		  //  MAKE THIS THREAD-SAFE, PLEASE
-		  if (dishPtr_ != NULL) {
+		  while (dishPtr_ != NULL) {
 		    printf("Clear this dish off the table!!!");
 		    usleep(3);
+		    pthread_cond_wait(&noDishOnTable_,&lock_);
 		  }
 		  dishPtr_	= newDishPtr;
                   
@@ -594,7 +607,6 @@ public :
 
 //  PURPOSE:  To serve as the global singleton Table instance.
 Table		table;
-pthread_mutex_t tableLock;
 
 //  PURPOSE:  To have the Chef pointed to by 'void*' ptr 'vPtr' execute
 //	its 'prepare()' method 'NUM_DISHES_TO_DO' times and 'serve()' the
@@ -607,9 +619,7 @@ void*		cook	(void*		vPtr
   //  PERHAPS A LOOP HERE
   for (int i = 0; i < NUM_DISHES_TO_DO; i++) {
     Dish* dish = (*chefPtr).prepare();
-    pthread_mutex_lock(&tableLock);
     table.serve(*chefPtr, dish);
-    pthread_mutex_unlock(&tableLock);
   }
   // done
 
@@ -627,9 +637,7 @@ void*		eat	(void*		vPtr
 
   //  PERHAPS A LOOP HERE
   for (int i = 0; i < NUM_DISHES_TO_DO; i++) {
-    pthread_mutex_lock(&tableLock);
     Dish* dish = table.eatFrom(*gourmandPtr);
-    pthread_mutex_unlock(&tableLock);
     (*gourmandPtr).consume(dish);
   }
 
@@ -656,8 +664,6 @@ int		main	(int		argc,
   pthread_t	chefIds[NUM_CHEFS];
   pthread_t	gourmandIds[NUM_CHEFS];
   
-  pthread_mutex_init(&tableLock,NULL);
-
   //  PERHAPS A LOOP HERE
   for (int i = 0; i < NUM_CHEFS; i++) {
     Chef* chef = new Chef(i);
@@ -678,8 +684,6 @@ int		main	(int		argc,
     delete(gour);
   }
   // done
-
-  pthread_mutex_destroy(&tableLock);  
 
   //  III.  Finished:
   return(EXIT_SUCCESS);
