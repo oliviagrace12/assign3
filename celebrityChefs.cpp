@@ -566,19 +566,25 @@ public :
   				)
   		{
 		  //  MAKE THIS THREAD-SAFE, PLEASE
+		  pthread_mutex_lock(&lock_);
 		  while (dishPtr_ != NULL) {
-		    printf("Clear this dish off the table!!!");
-		    usleep(3);
+		    std::cout
+			<< chef
+			<< ": Clear this dish off the table!!!\n";
+		    usleep(rand() % MAX_SLEEP_SECONDS);
 		    pthread_cond_wait(&noDishOnTable_,&lock_);
 		  }
 		  dishPtr_	= newDishPtr;
-                  
+           
 		  sleep( (rand() % MAX_SLEEP_SECONDS) + 1);
 		  std::cout
 			<< chef
 			<< ": \""
 			<< *getDishPtr()
 			<< " is served!\"\n";
+
+		  pthread_mutex_unlock(&lock_);
+		  pthread_cond_signal(&dishOnTable_);
 		}
 
   //  PURPOSE:  To have 'gourmand' attempt to remove 'dishPtr_' from '*this'
@@ -591,7 +597,14 @@ public :
   				)
 		{
 		  //  MAKE THIS THREAD-SAFE, PLEASE
-
+		  pthread_mutex_lock(&lock_);
+		  while (dishPtr_ == NULL) {
+		    std::cout
+			<< gourmand
+			<< ": Bring me a dish, pronto! I'm hungry!\n";
+		    usleep(rand() % MAX_SLEEP_SECONDS);
+		    pthread_cond_wait(&dishOnTable_,&lock_);
+		  }
 		  Dish*	toReturn	= getDishPtr();
 		  std::cout
 			<< gourmand
@@ -600,6 +613,8 @@ public :
 			<< " looks yummy!\"\n";
 		  sleep( (rand() % MAX_SLEEP_SECONDS) + 1);
 		  dishPtr_  = NULL;
+		  pthread_mutex_unlock(&lock_);
+		  pthread_cond_signal(&noDishOnTable_);
 		  return(toReturn);
 		}
 };
@@ -621,6 +636,7 @@ void*		cook	(void*		vPtr
     Dish* dish = (*chefPtr).prepare();
     table.serve(*chefPtr, dish);
   }
+  delete(chefPtr);
   // done
 
   return(NULL /* CHANGE IF YOU WANT */);
@@ -640,6 +656,8 @@ void*		eat	(void*		vPtr
     Dish* dish = table.eatFrom(*gourmandPtr);
     (*gourmandPtr).consume(dish);
   }
+  delete(gourmandPtr);
+  // done
 
   return(NULL /* CHANGE IF YOU WANT */);
 }
@@ -668,21 +686,23 @@ int		main	(int		argc,
   for (int i = 0; i < NUM_CHEFS; i++) {
     Chef* chef = new Chef(i);
     pthread_create(&chefIds[i], NULL, cook, chef); 
-    int* intPtr;
-    pthread_join(chefIds[i], (void**)&intPtr);
-    delete(chef);
+
+    Gourmand* gour = new Gourmand(i);
+    pthread_create(&gourmandIds[i], NULL, eat, gour);
   }
-  // done
 
   //  II.C.  Wait for Chef and Gourmand threads:
   //  PERHAPS A LOOP HERE
   for (int i = 0; i < NUM_GOURMANDS; i++) {
-    Gourmand* gour = new Gourmand(i);
-    pthread_create(&gourmandIds[i], NULL, eat, gour);
     int* intPtr;
+    pthread_join(chefIds[i], (void**)&intPtr);
     pthread_join(gourmandIds[i], (void**)&intPtr);
-    delete(gour);
   }
+
+//  for (int i = 0; i < NUM_CHEFS; i++) {
+  //  delete(&chefIds[i]);
+  //  delete(&gourmandIds[i]);
+//  }
   // done
 
   //  III.  Finished:
