@@ -20,5 +20,31 @@ int main(int argc, char* argv[]) {
     *cPtr = '\0';
   }
 
-  struct Word* toReturn = (struct Word*)malloc(sizeof(struct Word));
+  ///struct Word* toReturn = (struct Word*)malloc(sizeof(struct Word));
 }
+
+struct Word createWord(struct Word word, char* line) {
+  if (line == NULL) {
+    return word;
+  }
+
+  int index = 0;  
+  char* charRun = line;
+  
+  while (charRun[index] != '\0' && charRun[index] != ',') {
+    charRun++;
+    index++;
+  }
+  
+  if (charRun[index] != ',') {
+    struct Word word = (struct Word*)malloc(sizeof(struct Word));
+    word->textPtr_ = charRun++;
+    
+  }
+  
+  if (charRun[index] != '\0') {
+    return word;
+  }
+  return createWord(line + 1);
+}
+
