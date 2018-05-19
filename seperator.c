@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 
-int NUM_CHAR = 100;
+int NUM_CHAR = 256;
 
 struct Word {
   char*		textPtr_;
@@ -18,7 +18,7 @@ char* getFirstWord(const char* string) {
   }
 
   if (string[index] == ',' || (string[index] == '\0' && index != 0)) {
-    char* firstWord = (char*)malloc(sizeof(index+1));;
+    char* firstWord = (char*)malloc(sizeof(index+1));
     size_t nToCopy = index;
     strncpy(firstWord, string, nToCopy);
     return firstWord;
@@ -43,7 +43,8 @@ struct Word* obtainCommaSeparatedList(const char* string) {
   // TODO  free(firstWord);
     return toReturn;
   }
-  char stringCopy[stringSize];
+  char stringCopy[stringSize + 1];
+  memset(stringCopy, '\0', sizeof(stringCopy));
   strncpy(stringCopy, string, stringSize); 
   char* remainingString = &(stringCopy[firstWordSize + 1]);
   printf("Remaining string: %s\n", remainingString);
