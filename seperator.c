@@ -36,14 +36,15 @@ struct Word* obtainCommaSeparatedList(const char* string) {
   printf("First word: %s\n", firstWord);
   toReturn->textPtr_ = firstWord;
   int firstWordSize = strlen(firstWord);
+  int stringSize = strlen(string);
   printf("firstWordSize: %d\n", firstWordSize);
-  printf("string size: %d\n", strlen(string));
-  if (firstWordSize == 0 && strlen(string) == 0) {
+  printf("string size: %d\n", stringSize);
+  if (firstWordSize == 0 && stringSize == 0 || stringSize == firstWordSize) {
   // TODO  free(firstWord);
     return toReturn;
   }
   
-  char* remainingString = &(string[firstWordSize+1]);
+  char* remainingString = &(string[firstWordSize + 1]);
   printf("Remaining string: %s\n", remainingString);
   toReturn->nextPtr_ = obtainCommaSeparatedList(remainingString);
  // TODO free(firstWord);
