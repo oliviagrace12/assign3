@@ -9,10 +9,58 @@ struct Word {
   struct Word*	nextPtr_;
 };
 
+char* getFirstWord(const char* string) {
+  int index = 0;  
+  
+  while (string[index] != '\0' && string[index] != ',') {
+    index++;
+  }
+
+  if (string[index] == ',') {
+    char* firstWord = (char*)malloc(sizeof(index+1));;
+    size_t nToCopy = index;
+    strncpy(firstWord, string, nToCopy);
+    return firstWord;
+  }
+  
+  if (string[index] == '\0') {
+    return "\0";
+  }
+}
+
+struct Word* obtainCommaSeparatedList(const char* string) {
+  printf("String: %s\n", string);
+  struct Word* toReturn = (struct Word*)malloc(sizeof(struct Word));
+  char* firstWord = getFirstWord(string);
+  printf("First word: %s\n", firstWord);
+  toReturn->textPtr_ = firstWord;
+  if (strlen(firstWord) == 0 && strlen(string) == 0) {
+  // TODO  free(firstWord);
+    return toReturn;
+  }
+  char* remainingString = &(string[firstWord-string]);
+  printf("Remaining string: %s\n", remainingString);
+  toReturn->nextPtr_ = obtainCommaSeparatedList(remainingString);
+ // TODO free(firstWord);
+  return toReturn;
+}
+
+void printCommaSeparatedList(const struct Word* list) {
+  printf("%s\n", list->textPtr_);
+  printCommaSeparatedList(list->nextPtr_);
+}
+
+void freeCommaSeparatedList(struct Word* list) {
+ // Word current = list;
+ // while (current->nextPtr_ != NULL) {
+ //   free()
+ // }
+}
+
 int main(int argc, char* argv[]) {
   printf("Enter a comma-seperated list of strings:\n");
 
-  char* line;
+  char line[NUM_CHAR];
   fgets(line, NUM_CHAR, stdin); 
   
   char*	cPtr = strchr(line,'\n');
@@ -20,9 +68,21 @@ int main(int argc, char* argv[]) {
     *cPtr = '\0';
   }
 
-  ///struct Word* toReturn = (struct Word*)malloc(sizeof(struct Word));
+  printf("Line: %s\n", line);
+//  char* firstWord = getFirstWord(line);
+//  printf("First word: %s\n", firstWord);
+
+  struct Word* wordList = obtainCommaSeparatedList(line);
+  printCommaSeparatedList(wordList);
+//  freeCommaSeparatedList(wordList);
+
+  return(EXIT_SUCCESS);
 }
 
+
+
+
+/*
 struct Word createWord(struct Word word, char* line) {
   if (line == NULL) {
     return word;
@@ -47,4 +107,7 @@ struct Word createWord(struct Word word, char* line) {
   }
   return createWord(line + 1);
 }
+*/
+
+
 
