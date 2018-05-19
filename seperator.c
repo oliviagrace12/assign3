@@ -43,8 +43,9 @@ struct Word* obtainCommaSeparatedList(const char* string) {
   // TODO  free(firstWord);
     return toReturn;
   }
-  
-  char* remainingString = &(string[firstWordSize + 1]);
+  char stringCopy[stringSize];
+  strncpy(stringCopy, string, stringSize); 
+  char* remainingString = &(stringCopy[firstWordSize + 1]);
   printf("Remaining string: %s\n", remainingString);
   toReturn->nextPtr_ = obtainCommaSeparatedList(remainingString);
  // TODO free(firstWord);
