@@ -13,10 +13,11 @@ char* getFirstWord(const char* string) {
   int index = 0;  
   
   while (string[index] != '\0' && string[index] != ',') {
+//    printf("char at index %d: %c\n", index, string[index]);
     index++;
   }
 
-  if (string[index] == ',') {
+  if (string[index] == ',' || (string[index] == '\0' && index != 0)) {
     char* firstWord = (char*)malloc(sizeof(index+1));;
     size_t nToCopy = index;
     strncpy(firstWord, string, nToCopy);
@@ -34,11 +35,15 @@ struct Word* obtainCommaSeparatedList(const char* string) {
   char* firstWord = getFirstWord(string);
   printf("First word: %s\n", firstWord);
   toReturn->textPtr_ = firstWord;
-  if (strlen(firstWord) == 0 && strlen(string) == 0) {
+  int firstWordSize = strlen(firstWord);
+  printf("firstWordSize: %d\n", firstWordSize);
+  printf("string size: %d\n", strlen(string));
+  if (firstWordSize == 0 && strlen(string) == 0) {
   // TODO  free(firstWord);
     return toReturn;
   }
-  char* remainingString = &(string[firstWord-string]);
+  
+  char* remainingString = &(string[firstWordSize+1]);
   printf("Remaining string: %s\n", remainingString);
   toReturn->nextPtr_ = obtainCommaSeparatedList(remainingString);
  // TODO free(firstWord);
@@ -46,8 +51,10 @@ struct Word* obtainCommaSeparatedList(const char* string) {
 }
 
 void printCommaSeparatedList(const struct Word* list) {
-  printf("%s\n", list->textPtr_);
-  printCommaSeparatedList(list->nextPtr_);
+  printf("\"%s\"\n", list->textPtr_);
+  if (list->nextPtr_ != NULL) {
+    printCommaSeparatedList(list->nextPtr_);
+  }
 }
 
 void freeCommaSeparatedList(struct Word* list) {
