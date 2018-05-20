@@ -13,7 +13,6 @@ char* getFirstWord(const char* string) {
   int index = 0;  
   
   while (string[index] != '\0' && string[index] != ',') {
-//    printf("char at index %d: %c\n", index, string[index]);
     index++;
   }
 
@@ -30,26 +29,23 @@ char* getFirstWord(const char* string) {
 }
 
 struct Word* obtainCommaSeparatedList(const char* string) {
-  printf("String: %s\n", string);
   struct Word* toReturn = (struct Word*)malloc(sizeof(struct Word));
   char* firstWord = getFirstWord(string);
-  printf("First word: %s\n", firstWord);
   toReturn->textPtr_ = firstWord;
+
   int firstWordSize = strlen(firstWord);
   int stringSize = strlen(string);
-  printf("firstWordSize: %d\n", firstWordSize);
-  printf("string size: %d\n", stringSize);
+  
   if (firstWordSize == 0 && stringSize == 0 || stringSize == firstWordSize) {
-  // TODO  free(firstWord);
     return toReturn;
   }
-  char stringCopy[stringSize + 1];
-  memset(stringCopy, '\0', sizeof(stringCopy));
+
+  char* stringCopy = (char*)malloc(stringSize + 1);
   strncpy(stringCopy, string, stringSize); 
+
   char* remainingString = &(stringCopy[firstWordSize + 1]);
-  printf("Remaining string: %s\n", remainingString);
   toReturn->nextPtr_ = obtainCommaSeparatedList(remainingString);
- // TODO free(firstWord);
+
   return toReturn;
 }
 
@@ -78,46 +74,11 @@ int main(int argc, char* argv[]) {
     *cPtr = '\0';
   }
 
-  printf("Line: %s\n", line);
-//  char* firstWord = getFirstWord(line);
-//  printf("First word: %s\n", firstWord);
-
   struct Word* wordList = obtainCommaSeparatedList(line);
   printCommaSeparatedList(wordList);
   freeCommaSeparatedList(wordList);
 
   return(EXIT_SUCCESS);
 }
-
-
-
-
-/*
-struct Word createWord(struct Word word, char* line) {
-  if (line == NULL) {
-    return word;
-  }
-
-  int index = 0;  
-  char* charRun = line;
-  
-  while (charRun[index] != '\0' && charRun[index] != ',') {
-    charRun++;
-    index++;
-  }
-  
-  if (charRun[index] != ',') {
-    struct Word word = (struct Word*)malloc(sizeof(struct Word));
-    word->textPtr_ = charRun++;
-    
-  }
-  
-  if (charRun[index] != '\0') {
-    return word;
-  }
-  return createWord(line + 1);
-}
-*/
-
 
 
