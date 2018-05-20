@@ -61,10 +61,10 @@ void printCommaSeparatedList(const struct Word* list) {
 }
 
 void freeCommaSeparatedList(struct Word* list) {
- // Word current = list;
- // while (current->nextPtr_ != NULL) {
- //   free()
- // }
+  if (list->nextPtr_ != NULL) {
+    freeCommaSeparatedList(list->nextPtr_); 
+  } 
+  free(list);
 }
 
 int main(int argc, char* argv[]) {
@@ -84,7 +84,7 @@ int main(int argc, char* argv[]) {
 
   struct Word* wordList = obtainCommaSeparatedList(line);
   printCommaSeparatedList(wordList);
-//  freeCommaSeparatedList(wordList);
+  freeCommaSeparatedList(wordList);
 
   return(EXIT_SUCCESS);
 }
