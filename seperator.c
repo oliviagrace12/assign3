@@ -10,22 +10,21 @@ struct Word {
 };
 
 char* getFirstWord(const char* string) {
-  int index = 0;  
-  
-  while (string[index] != '\0' && string[index] != ',') {
-    index++;
-  }
+  char* commaPtr = strchr(string, ',');  
 
-  if (string[index] == ',' || (string[index] == '\0' && index != 0)) {
-    char* firstWord = (char*)malloc(sizeof(index+1));
-    size_t nToCopy = index;
-    strncpy(firstWord, string, nToCopy);
+  if (commaPtr == NULL && strlen(string) == 0) {
+    return "\0";
+  }   
+
+  if (commaPtr == NULL) {
+    char* firstWord = (char*)malloc(sizeof(string));
+    strncpy(firstWord, string, strlen(string));
     return firstWord;
   }
-  
-  if (string[index] == '\0') {
-    return "\0";
-  }
+
+  char* firstWord = (char*)malloc(sizeof(commaPtr - string));
+  strncpy(firstWord, string, commaPtr - string);
+  return firstWord;
 }
 
 struct Word* obtainCommaSeparatedList(const char* string) {
